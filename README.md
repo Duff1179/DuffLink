@@ -1,26 +1,28 @@
-# ProMonitor — ProPresenter Stage Display
+# DuffLink — ProPresenter Stage Display
 
 A desktop app that connects to ProPresenter's API and hosts a stage display web page that any device on your network can open.
 
----
+\---
 
 ## What it does
 
-- **Host PC runs the app** → enter your ProPresenter IP, port, and service start time
-- **Phone/tablet opens a browser** → sees a live dark stage display with:
-  - Current slide text
-  - Next slide text
-  - Current presentation name
-  - Slides remaining in the current presentation
-  - Active ProPresenter timer (name + value)
-  - Elapsed service time (auto-counted from your start time)
+* **Host PC runs the app** → enter your ProPresenter IP, port, and service start time
+* **Phone/tablet opens a browser** → sees a live dark stage display with:
 
----
+  * Current slide text
+  * Next slide text
+  * Current presentation name
+  * Slides remaining in the current presentation
+  * Active ProPresenter timer (name + value)
+  * Elapsed service time (auto-counted from your start time)
+
+\---
 
 ## Building the .exe (Windows)
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/) v18 or newer installed on the build machine
+
+* [Node.js](https://nodejs.org/) v18 or newer installed on the build machine
 
 ### Steps
 
@@ -33,66 +35,47 @@ npm run build:win
 ```
 
 The output will be at:
+
 ```
 dist/ProMonitor.exe
 ```
 
 This is a portable single-file executable — no install needed. Just double-click and run.
 
----
-
-## Running from source (for testing)
-
-```bash
-npm install
-npm start
-```
-
----
+\---
 
 ## Usage
 
-1. Open ProMonitor.exe on the **host PC** (the one running ProPresenter, or any PC on the same network)
+1. Open DuffLink.exe on the **host PC** (the one running ProPresenter, or any PC on the same network)
 2. Enter:
-   - **IP Address** — the IP of the machine running ProPresenter (check ProPresenter → Preferences → Network)
-   - **Port** — default is `1025` for ProPresenter 7
-   - **Service Start Time** — used to show elapsed service time on client devices
-3. Click **Connect & Start Hosting**
-4. A URL like `http://192.168.1.x:8765` will appear
-5. Open that URL on any phone/tablet on the same WiFi network
 
----
+   * **IP Address** — the IP of the machine running ProPresenter (check ProPresenter → Preferences → Network)
+   * **Port** — default is `1025` for ProPresenter 7
+   * **Service Start Time** — used to show elapsed service time on client devices
+3. Click **Connect \& Start Hosting**
+4. A URL like `http://192.168.1.x:8765` will appear
+5. Open that URL on any phone/tablet on the same WiFi network or try to connect using the Roku App
+
+\---
 
 ## ProPresenter Setup
 
 In ProPresenter 7:
-- Go to **Preferences → Network**
-- Enable the **Network** toggle
-- Note the **IP** and **Port** (default 1025)
-- The app uses the ProPresenter WebSocket API (`/v1/ws`)
 
----
+* Go to **Preferences → Network**
+* Enable the **Network** toggle
+* Note the **IP** and **Port** (default 1025)
+* The app uses the ProPresenter WebSocket API (`/v1`)
+
+\---
 
 ## Port used by this app
 
 The web server for phone clients runs on port **8765**.
 Make sure Windows Firewall allows inbound connections on port 8765 if clients can't connect.
 
-> Quick fix: When Windows asks "Allow access?" after launching, click **Allow**.
+> Quick fix: When Windows asks "Allow access?" after launching, click \\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\*Allow\\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\*.
 > Or manually: Windows Defender Firewall → Allow an app → add ProMonitor.exe
 
----
+\---
 
-## Network diagram
-
-```
-[ProPresenter PC] ←── WebSocket (port 1025) ───┐
-                                                 │
-[ProMonitor.exe running on host PC]              │
-         │                                       │
-         └──── hosts web server (port 8765) ─────┘
-                        │
-         ┌──────────────┼──────────────┐
-      [Phone]        [Tablet]       [Laptop]
-   (browser → http://HOST_IP:8765)
-```
