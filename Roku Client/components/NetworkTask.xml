@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <component name="NetworkTask" extends="Task">
     <script type="text/brightscript" uri="pkg:/components/NetworkTask.brs" />
+    
     <interface>
         <field id="serverState" type="assocarray" />
         <field id="isOnline" type="boolean" value="false" />

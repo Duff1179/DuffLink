@@ -2,50 +2,34 @@ sub init()
     m.presName = m.top.findNode("presName")
     m.slideCounter = m.top.findNode("slideCounter")
     m.liveDot = m.top.findNode("liveDot")
-    
     m.currentText = m.top.findNode("currentText")
     m.nextText = m.top.findNode("nextText")
-    
     m.slidesLeftValue = m.top.findNode("slidesLeftValue")
     m.timerValue = m.top.findNode("timerValue")
     m.timerName = m.top.findNode("timerName")
     m.serviceElapsedValue = m.top.findNode("serviceElapsedValue")
-    
     m.offlineOverlay = m.top.findNode("offlineOverlay")
     
-    ' Set up massive fonts (Mimics web CSS Clamps)
-    fontMassive = CreateObject("roSGNode", "Font")
-    fontMassive.uri = "font:LargeBoldSystemFont"
-    fontMassive.size = 90
-    m.currentText.font = fontMassive
-    m.slidesLeftValue.font = fontMassive
-    m.timerValue.font = fontMassive
-    m.serviceElapsedValue.font = fontMassive
-    
-    fontLarge = CreateObject("roSGNode", "Font")
-    fontLarge.uri = "font:MediumSystemFont"
-    fontLarge.size = 65
-    m.nextText.font = fontLarge
-
     m.serviceStartTime = ""
-    m.serviceTimer = CreateObject("roSGNode", "Timer")
-    m.serviceTimer.duration = 1
-    m.serviceTimer.repeat = true
+    m.serviceTimer = m.top.findNode("serviceTimer")
     m.serviceTimer.observeField("fire", "onServiceTick")
     
-    m.networkTask = CreateObject("roSGNode", "NetworkTask")
+    m.networkTask = m.top.findNode("networkTask")
     m.networkTask.observeField("serverState", "onStateUpdate")
     m.networkTask.observeField("isOnline", "onConnectionChange")
+    
+    ' Safely start the task AFTER it is fully bound
+    print "[StageDisplay] Starting Network Task..."
     m.networkTask.control = "RUN"
 end sub
 
 sub onConnectionChange()
-    if m.networkTask.isOnline
+    if m.networkTask.isOnline = true
         m.offlineOverlay.visible = false
-        m.liveDot.color = "0x34D399FF" ' Green
+        m.liveDot.color = "0x34D399FF"
     else
         m.offlineOverlay.visible = true
-        m.liveDot.color = "0x7F1D1DFF" ' Red
+        m.liveDot.color = "0x7F1D1DFF"
     end if
 end sub
 
@@ -65,10 +49,16 @@ sub onStateUpdate()
     
     if total > 0
         m.slideCounter.text = (idx + 1).toStr() + " / " + total.toStr()
-        rem = total - idx - 1
-        if rem < 0 then rem = 0
-        m.slidesLeftValue.text = rem.toStr()
-        if rem = 0 then m.slidesLeftValue.color = "0xFBBF24FF" else m.slidesLeftValue.color = "0x4F8EF7FF"
+        
+        remaining = total - idx - 1
+        if remaining < 0 then remaining = 0
+        m.slidesLeftValue.text = remaining.toStr()
+        
+        if remaining = 0 
+            m.slidesLeftValue.color = "0xFBBF24FF" 
+        else 
+            m.slidesLeftValue.color = "0x4F8EF7FF"
+        end if
     else
         m.slideCounter.text = "— / —"
         m.slidesLeftValue.text = "—"
@@ -91,7 +81,6 @@ sub onStateUpdate()
         m.nextText.color = "0x374151FF"
     end if
 
-    ' RAW TIMER LOGIC
     activeTimer = invalid
     if s.clocks <> invalid
         for each clock in s.clocks
@@ -107,9 +96,9 @@ sub onStateUpdate()
         if activeTimer.name <> invalid then m.timerName.text = activeTimer.name else m.timerName.text = ""
         
         if activeTimer.state = "overrunning"
-            m.timerValue.color = "0xF87171FF" ' RED 
+            m.timerValue.color = "0xF87171FF" 
         else
-            m.timerValue.color = "0x34D399FF" ' GREEN
+            m.timerValue.color = "0x34D399FF"
         end if
     else
         m.timerValue.text = "—"
@@ -144,15 +133,26 @@ sub onServiceTick()
     
     timeStr = ""
     if h > 0 then timeStr = h.toStr() + ":"
-    if m_val < 10 then timeStr += "0" + m_val.toStr() else timeStr += m_val.toStr()
-    timeStr += ":"
-    if s_val < 10 then timeStr += "0" + s_val.toStr() else timeStr += s_val.toStr()
+    
+    if m_val < 10 
+        timeStr = timeStr + "0" + m_val.toStr() 
+    else 
+        timeStr = timeStr + m_val.toStr()
+    end if
+    
+    timeStr = timeStr + ":"
+    
+    if s_val < 10 
+        timeStr = timeStr + "0" + s_val.toStr() 
+    else 
+        timeStr = timeStr + s_val.toStr()
+    end if
     
     m.serviceElapsedValue.text = timeStr
     
-    if elapsed > 5400 ' 90 minutes
-        m.serviceElapsedValue.color = "0xFBBF24FF" ' Yellow
+    if elapsed > 5400
+        m.serviceElapsedValue.color = "0xFBBF24FF"
     else
-        m.serviceElapsedValue.color = "0xC9D1DBFF" ' White
+        m.serviceElapsedValue.color = "0xC9D1DBFF"
     end if
 end sub

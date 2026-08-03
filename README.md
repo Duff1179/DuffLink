@@ -26,6 +26,8 @@ A desktop app that connects to ProPresenter's API and hosts a stage display web 
 
 ### Steps
 
+Run these commands in the terminal in the DuffLink root folder
+
 ```bash
 # 1. Install dependencies
 npm install
@@ -37,7 +39,7 @@ npm run build:win
 The output will be at:
 
 ```
-dist/ProMonitor.exe
+dist/DuffLink.exe
 ```
 
 This is a portable single-file executable — no install needed. Just double-click and run.
@@ -74,7 +76,7 @@ In ProPresenter 7:
 The web server for phone clients runs on port **8765**.
 Make sure Windows Firewall allows inbound connections on port 8765 if clients can't connect.
 
-> Quick fix: When Windows asks "Allow access?" after launching, click \\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\*Allow\\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\*.
+> Quick fix: When Windows asks "Allow access?" after launching, click \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*Allow\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*.
 > Or manually: Windows Defender Firewall → Allow an app → add ProMonitor.exe
 
 \---
