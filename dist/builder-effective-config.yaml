@@ -1,0 +1,18 @@
+directories:
+  output: dist
+  buildResources: build
+appId: com.dufflink.stagemonitor
+productName: DuffLink
+icon: icon.ico
+files:
+  - filter:
+      - main.js
+      - ui/**/*
+      - node_modules/**/*
+win:
+  target: portable
+  artifactName: DuffLink.exe
+mac:
+  target: dmg
+  category: public.app-category.productivity
+electronVersion: 42.4.1

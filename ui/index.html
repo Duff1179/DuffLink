@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DuffLink Host</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #0d0f11; 
+    --surface: #161a1e;
+    --border:  #252a30;
+    --accent:  #4f8ef7;
+    --text:    #e8eaed;
+    --muted:   #6b7280;
+    --success: #34d399;
+    --error:   #f87171;
+    --warn:    #fbbf24;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    user-select: none;
+    overflow: hidden;
+  }
+
+  .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; width: 100%; max-width: 400px; }
+  .logo-icon { width: 34px; height: 34px; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+  .logo-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .logo-text  { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+  .logo-sub   { font-size: 10px; color: var(--muted); letter-spacing: 0.4px; margin-top: 1px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; width: 100%; max-width: 400px; }
+  .section-label { font-size: 10px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+
+  .row { display: flex; gap: 10px; margin-bottom: 12px; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; }
+  .field.grow { flex: 1; min-width: 0; }
+  .field.fixed-sm { width: 76px; flex-shrink: 0; }
+
+  .field label { font-size: 10px; color: var(--muted); margin-bottom: 5px; font-weight: 500; white-space: nowrap; }
+  .field input { background: var(--bg); border: 1px solid var(--border); border-radius: 7px; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 13px; padding: 9px 10px; outline: none; transition: border-color 0.15s; width: 100%; }
+  .field input[type="time"], .field input[type="date"] { font-family: 'Inter', sans-serif; font-size: 12px; padding: 9px 8px; color-scheme: dark; }
+  .field input:focus { border-color: var(--accent); }
+  .field input::placeholder { color: var(--muted); opacity: 0.5; }
+
+  .divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+  .connect-btn { width: 100%; padding: 11px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; margin-top: 4px; }
+  .connect-btn:hover   { opacity: 0.88; }
+  .connect-btn:disabled{ opacity: 0.35; cursor: not-allowed; }
+  .connect-btn.danger  { background: var(--error); }
+
+  .status-bar { margin-top: 14px; padding: 11px 14px; border-radius: 8px; font-size: 12px; display: none; align-items: flex-start; gap: 9px; line-height: 1.5; }
+  .status-bar.show        { display: flex; }
+  .status-bar.connecting  { background:#1a1f26; border:1px solid var(--border); color:var(--muted); }
+  .status-bar.success     { background:#0d2318; border:1px solid #1a5c3a; color:var(--success); }
+  .status-bar.error       { background:#200f0f; border:1px solid #5c1a1a; color:var(--error); }
+
+  .status-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; margin-top:4px; }
+  .status-dot.pulse { animation: pulse 1.4s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .connecting .status-dot { background: var(--warn); }
+  .success    .status-dot { background: var(--success); }
+  .error      .status-dot { background: var(--error); }
+
+  .url-copy { display:inline-flex; align-items:center; gap:5px; margin-top:6px; font-family:'JetBrains Mono',monospace; font-size:11px; background:#0d2318; border:1px solid #1a5c3a; border-radius:5px; padding:4px 9px; cursor:pointer; color:var(--success); }
+  .url-copy:hover { background:#112c1e; }
+  .url-label { font-size:9px; color:var(--muted); margin-top:8px; display:block; }
+</style>
+</head>
+<body>
+
+<div class="logo">
+  <div class="logo-icon"><img src="../icon.ico" alt="DuffLink" onerror="this.style.display='none'"/></div>
+  <div>
+    <div class="logo-text">DuffLink</div>
+    <div class="logo-sub">ProPresenter Host Controller</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="section-label">ProPresenter OpenAPI Connection</div>
+
+  <div class="row">
+    <div class="field grow">
+      <label>IP Address</label>
+      <input id="ip" type="text" placeholder="192.168.1.100"/>
+    </div>
+    <div class="field fixed-sm">
+      <label>Port</label>
+      <input id="port" type="text" placeholder="50001" value="50001"/>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="section-label">Service Settings</div>
+
+  <div class="row">
+    <div class="field grow">
+      <label>Date</label>
+      <input id="serviceDate" type="date"/>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="field grow">
+      <label>Time 1</label>
+      <input id="serviceTime1" type="time" value="16:15"/>
+    </div>
+    <div class="field grow">
+      <label>Time 2</label>
+      <input id="serviceTime2" type="time" value="18:00"/>
+    </div>
+    <div class="field grow">
+      <label>Time 3</label>
+      <input id="serviceTime3" type="time" value="20:00"/>
+    </div>
+  </div>
+
+  <button class="connect-btn" id="connectBtn" onclick="toggleConnect()">Connect &amp; Start Hosting</button>
+
+  <div class="status-bar" id="statusBar">
+    <div class="status-dot pulse" id="statusDot"></div>
+    <div id="statusText"></div>
+  </div>
+</div>
+
+<script>
+  const { ipcRenderer } = require('electron');
+
+  // The 100% bulletproof local date string builder (No UTC offset bugs!)
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  document.getElementById('serviceDate').value = year + '-' + month + '-' + day;
+
+  let connected = false;
+
+  async function toggleConnect() {
+    if (connected) return disconnect();
+
+    const ip   = document.getElementById('ip').value.trim();
+    const port = document.getElementById('port').value.trim();
+    const date = document.getElementById('serviceDate').value;
+    const t1   = document.getElementById('serviceTime1').value;
+    const t2   = document.getElementById('serviceTime2').value;
+    const t3   = document.getElementById('serviceTime3').value;
+
+    if (!ip || !port) return showStatus('error', 'Enter an IP address and port.');
+
+    const serviceTimes = [];
+    if (t1) serviceTimes.push(new Date(`${date}T${t1}:00`).toISOString());
+    if (t2) serviceTimes.push(new Date(`${date}T${t2}:00`).toISOString());
+    if (t3) serviceTimes.push(new Date(`${date}T${t3}:00`).toISOString());
+
+    showStatus('connecting', 'Connecting to ProPresenter OpenAPI…');
+    document.getElementById('connectBtn').disabled = true;
+
+    const result = await ipcRenderer.invoke('connect', { ip, port, serviceTimes });
+
+    if (result.ok) {
+      connected = true;
+      document.getElementById('connectBtn').textContent = 'Disconnect';
+      document.getElementById('connectBtn').classList.add('danger');
+      document.getElementById('connectBtn').disabled = false;
+      showStatus('success', `Connected & hosting<span class="url-label">Open on stage display device:</span><span class="url-copy" onclick="navigator.clipboard.writeText('${result.url}')">${result.url} ⎘</span>`);
+    } else {
+      document.getElementById('connectBtn').disabled = false;
+      showStatus('error', result.error || 'Could not connect.');
+    }
+  }
+
+  async function disconnect() {
+    await ipcRenderer.invoke('disconnect');
+    connected = false;
+    document.getElementById('connectBtn').textContent = 'Connect & Start Hosting';
+    document.getElementById('connectBtn').classList.remove('danger');
+    document.getElementById('statusBar').className = 'status-bar';
+  }
+
+  function showStatus(type, html) {
+    const bar = document.getElementById('statusBar');
+    bar.className = 'status-bar show ' + type;
+    document.getElementById('statusDot').className = 'status-dot' + (type === 'connecting' ? ' pulse' : '');
+    document.getElementById('statusText').innerHTML = html;
+  }
+
+  ipcRenderer.on('disconnected', () => {
+    connected = false;
+    document.getElementById('connectBtn').textContent = 'Connect & Start Hosting';
+    document.getElementById('connectBtn').classList.remove('danger');
+    document.getElementById('connectBtn').disabled = false;
+    showStatus('error', 'ProPresenter API disconnected unexpectedly.');
+  });
+</script>
+</body>
+</html>

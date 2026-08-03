@@ -1,0 +1,38 @@
+{
+  "name": "dufflink",
+  "version": "1.0.0",
+  "description": "DuffLink ProPresenter Stage Monitor",
+  "main": "main.js",
+  "author": "DuffLink",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win --x64",
+    "build:mac": "electron-builder --mac"
+  },
+  "build": {
+    "appId": "com.dufflink.stagemonitor",
+    "productName": "DuffLink",
+    "icon": "icon.ico",
+    "files": [
+      "main.js",
+      "ui/**/*",
+      "node_modules/**/*"
+    ],
+    "win": {
+      "target": "portable",
+      "artifactName": "DuffLink.exe"
+    },
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.productivity"
+    }
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "ws": "^8.18.2"
+  },
+  "devDependencies": {
+    "electron": "^42.4.1",
+    "electron-builder": "^26.0.12"
+  }
+}
