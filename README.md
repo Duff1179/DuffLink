@@ -56,7 +56,7 @@ This is a portable single-file executable — no install needed. Just double-cli
    * **Service Start Time** — used to show elapsed service time on client devices
 3. Click **Connect \& Start Hosting**
 4. A URL like `http://192.168.1.x:8765` will appear
-5. Open that URL on any phone/tablet on the same WiFi network or try to connect using the Roku App
+5. Open that URL on any phone/tablet on the same WiFi network or try to connect using the Roku App (disable screensaver on Roku [Settings -> Theme -> Screensaver -> Start Time -> Never] or make it really long)
 
 \---
 

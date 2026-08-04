@@ -1,7 +1,6 @@
 sub init()
     m.presName = m.top.findNode("presName")
     m.slideCounter = m.top.findNode("slideCounter")
-    m.liveDot = m.top.findNode("liveDot")
     m.currentText = m.top.findNode("currentText")
     m.nextText = m.top.findNode("nextText")
     m.slidesLeftValue = m.top.findNode("slidesLeftValue")
@@ -26,10 +25,8 @@ end sub
 sub onConnectionChange()
     if m.networkTask.isOnline = true
         m.offlineOverlay.visible = false
-        m.liveDot.color = "0x34D399FF"
     else
         m.offlineOverlay.visible = true
-        m.liveDot.color = "0x7F1D1DFF"
     end if
 end sub
 
