@@ -36,7 +36,7 @@ sub onStateUpdate()
     if s.presentationName <> invalid and s.presentationName <> ""
         m.presName.text = UCase(s.presentationName)
     else
-        m.presName.text = "NO PRESENTATION"
+        m.presName.text = "No Presentation"
     end if
 
     total = 0
@@ -66,7 +66,7 @@ sub onStateUpdate()
         m.currentText.text = s.currentSlideText
         m.currentText.color = "0xDDE1E7FF"
     else
-        m.currentText.text = "Waiting for slides..."
+        m.currentText.text = ""
         m.currentText.color = "0x374151FF"
     end if
 
@@ -74,7 +74,7 @@ sub onStateUpdate()
         m.nextText.text = s.nextSlideText
         m.nextText.color = "0x6B7280FF"
     else
-        m.nextText.text = "—"
+        m.nextText.text = ""
         m.nextText.color = "0x374151FF"
     end if
 

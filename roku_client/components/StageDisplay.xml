@@ -20,7 +20,7 @@
             <Label text="ON SCREEN" color="0x1F2937FF" translation="[22, 70]">
                 <Font role="font" uri="pkg:/fonts/Inter-Bold.ttf" size="17" />
             </Label>
-            <Label id="currentText" text="Waiting for slides..." color="0x1F2937FF" wrap="true" width="1850" numLines="3" translation="[22, 110]">
+            <Label id="currentText" text="" color="0x1F2937FF" wrap="true" width="1850" numLines="3" translation="[22, 110]">
                 <Font role="font" uri="pkg:/fonts/Inter-Regular.ttf" size="120" />
             </Label>
             
@@ -29,7 +29,7 @@
             <Label text="UP NEXT" color="0x1F2937FF" translation="[22, 670]">
                 <Font role="font" uri="pkg:/fonts/Inter-Bold.ttf" size="17" />
             </Label>
-            <Label id="nextText" text="—" color="0x374151FF" wrap="true" width="1850" numLines="2" translation="[22, 710]">
+            <Label id="nextText" text="" color="0x374151FF" wrap="true" width="1850" numLines="2" translation="[22, 710]">
                 <Font role="font" uri="pkg:/fonts/Inter-Light.ttf" size="48" />
             </Label>
             
