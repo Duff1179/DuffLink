@@ -2,8 +2,6 @@
 
 A desktop app that connects to ProPresenter's API and hosts a stage display web page that any device on your network can open.
 
-\---
-
 ## What it does
 
 * **Host PC runs the app** → enter your ProPresenter IP, port, and service start time
@@ -15,8 +13,6 @@ A desktop app that connects to ProPresenter's API and hosts a stage display web 
   * Slides remaining in the current presentation
   * Active ProPresenter timer (name + value)
   * Elapsed service time (auto-counted from your start time)
-
-\---
 
 ## Building the .exe (Windows)
 
