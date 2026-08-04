@@ -44,8 +44,6 @@ dist/DuffLink.exe
 
 This is a portable single-file executable — no install needed. Just double-click and run.
 
-\---
-
 ## Usage
 
 1. Open DuffLink.exe on the **host PC** (the one running ProPresenter, or any PC on the same network)
@@ -56,9 +54,8 @@ This is a portable single-file executable — no install needed. Just double-cli
    * **Service Start Time** — used to show elapsed service time on client devices
 3. Click **Connect \& Start Hosting**
 4. A URL like `http://192.168.1.x:8765` will appear
-5. Open that URL on any phone/tablet on the same WiFi network or try to connect using the Roku App (disable screensaver on Roku [Settings -> Theme -> Screensaver -> Start Time -> Never] or make it really long)
-
-\---
+5. Open that URL on any phone/tablet on the same WiFi network or try to connect using the Roku App
+6. You will have to disable screensaver on Roku [Settings -> Theme -> Screensaver -> Start Time -> Never] to make it not time out
 
 ## ProPresenter Setup
 
@@ -69,15 +66,10 @@ In ProPresenter 7:
 * Note the **IP** and **Port** (default 1025)
 * The app uses the ProPresenter WebSocket API (`/v1`)
 
-\---
-
 ## Port used by this app
 
 The web server for phone clients runs on port **8765**.
 Make sure Windows Firewall allows inbound connections on port 8765 if clients can't connect.
 
-> Quick fix: When Windows asks "Allow access?" after launching, click \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*Allow\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*.
+> Quick fix: When Windows asks "Allow access?" after launching, click Allow
 > Or manually: Windows Defender Firewall → Allow an app → add ProMonitor.exe
-
-\---
-
