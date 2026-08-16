@@ -128,32 +128,40 @@ async function startPolling(ip, port) {
     if (!state.connected) return;
     const baseUrl = `http://${ip}:${port}`;
     try {
-        const [presRes, idxRes, timersRes] = await Promise.all([
+        const [presRes, slideIndexRes, slideStatusRes, timersRes] = await Promise.all([
             fetchJson(`${baseUrl}/v1/presentation/active`),
             fetchJson(`${baseUrl}/v1/presentation/slide_index`),
+            fetchJson(`${baseUrl}/v1/status/slide`),
             fetchJson(`${baseUrl}/v1/timers/current`)
         ]);
 
-        if (presRes === null && idxRes === null && timersRes === null) {
+        if (presRes === null && slideIndexRes === null && slideStatusRes === null && timersRes === null) {
             pollFailCount++;
             if (pollFailCount >= 5) { cleanup(true); return; }
         } else {
             pollFailCount = 0;
             if (presRes && presRes.presentation) {
                 state.presentationName = presRes.presentation.id?.name || state.presentationName;
-                let slides = presRes.presentation.groups ? presRes.presentation.groups.flatMap(g => g.slides || []) : [];
+                const slides = presRes.presentation.groups ? presRes.presentation.groups.flatMap(g => g.slides || []) : [];
                 state.slideCount = slides.length;
-                let idx = 0;
-                if (idxRes) {
-                    if (typeof idxRes.presentation_index === 'object') idx = idxRes.presentation_index.index;
-                    else if (idxRes.index !== undefined) idx = idxRes.index;
-                    else idx = parseInt(idxRes, 10);
-                }
-                state.slideIndex = isNaN(idx) ? 0 : idx;
-                state.currentSlideText = slides[state.slideIndex]?.text || '';
-                state.nextSlideText = slides[state.slideIndex + 1]?.text || '';
             } else if (presRes === null) {
-                state.presentationName = ''; state.currentSlideText = ''; state.nextSlideText = ''; state.slideCount = 0;
+                state.presentationName = ''; state.slideCount = 0;
+            }
+
+            let idx = 0;
+            if (slideIndexRes) {
+                if (typeof slideIndexRes.presentation_index === 'object') idx = slideIndexRes.presentation_index.index;
+                else if (slideIndexRes.index !== undefined) idx = slideIndexRes.index;
+                else idx = parseInt(slideIndexRes, 10);
+            }
+            state.slideIndex = isNaN(idx) ? 0 : idx;
+
+            if (slideStatusRes && slideStatusRes.current) {
+                state.currentSlideText = slideStatusRes.current.text || '';
+                state.nextSlideText = slideStatusRes.next?.text || '';
+            } else {
+                state.currentSlideText = '';
+                state.nextSlideText = '';
             }
 
             if (Array.isArray(timersRes)) {
