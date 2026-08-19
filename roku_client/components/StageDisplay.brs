@@ -20,6 +20,9 @@ sub init()
     ' Safely start the task AFTER it is fully bound
     print "[StageDisplay] Starting Network Task..."
     m.networkTask.control = "RUN"
+    
+    ' Make sure the screen is listening for remote control presses
+    m.top.setFocus(true) 
 end sub
 
 sub onConnectionChange()
@@ -152,4 +155,48 @@ sub onServiceTick()
     else
         m.serviceElapsedValue.color = "0xC9D1DBFF"
     end if
+end sub
+
+' ==========================================
+' NEW: Keyboard Handling Functions
+' ==========================================
+
+' Catches remote control button presses
+function onKeyEvent(key as String, press as Boolean) as Boolean
+    handled = false
+    if press then
+        ' If they press OK and the offline screen is currently visible
+        if key = "OK" and m.offlineOverlay.visible = true
+            showKeyboard()
+            handled = true
+        end if
+    end if
+    return handled
+end function
+
+sub showKeyboard()
+    m.keyboardDialog = createObject("roSGNode", "KeyboardDialog")
+    ' Prompting for the port as well in case your desktop app uses dynamic ports
+    m.keyboardDialog.title = "Enter DuffLink IP & Port (e.g. 192.168.1.50:8080)"
+    m.keyboardDialog.buttons = ["Connect", "Cancel"]
+    m.keyboardDialog.ObserveField("buttonSelected", "onIpEntered")
+    m.top.dialog = m.keyboardDialog
+end sub
+
+sub onIpEntered()
+    if m.keyboardDialog.buttonSelected = 0 
+        enteredIp = m.keyboardDialog.text
+        m.keyboardDialog.close = true
+        
+        if enteredIp <> ""
+            ' Pass the exact typed IP/Port down to the background task
+            m.networkTask.manualUrl = "http://" + enteredIp + "/api/state"
+        end if
+    else 
+        ' They clicked Cancel
+        m.keyboardDialog.close = true
+    end if
+    
+    ' Give focus back to the main screen so the OK button still works
+    m.top.setFocus(true)
 end sub

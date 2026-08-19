@@ -27,6 +27,12 @@ sub executeTask()
     http.InitClientCertificates()
     
     while true
+        ' Override the serverUrl if a manual one was provided
+        if m.top.manualUrl <> "" and serverUrl <> m.top.manualUrl
+            serverUrl = m.top.manualUrl
+            print "[NetworkTask] Manual URL overriding UDP: "; serverUrl
+        end if
+        
         if serverUrl = ""
             msg = wait(1000, msgPort)
             
