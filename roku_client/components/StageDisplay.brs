@@ -8,6 +8,7 @@ sub init()
     m.timerName = m.top.findNode("timerName")
     m.serviceElapsedValue = m.top.findNode("serviceElapsedValue")
     m.offlineOverlay = m.top.findNode("offlineOverlay")
+    m.offlineSource = m.top.findNode("offlineSource")
     
     m.serviceStartTime = ""
     m.serviceTimer = m.top.findNode("serviceTimer")
@@ -16,13 +17,46 @@ sub init()
     m.networkTask = m.top.findNode("networkTask")
     m.networkTask.observeField("serverState", "onStateUpdate")
     m.networkTask.observeField("isOnline", "onConnectionChange")
-    
-    ' Safely start the task AFTER it is fully bound
-    print "[StageDisplay] Starting Network Task..."
-    m.networkTask.control = "RUN"
+    m.networkTask.connectionMode = m.top.connectionMode
+    m.networkTask.directIp = m.top.directIp
+    m.networkTask.directPort = m.top.directPort
+    m.networkTask.serviceTimes = m.top.serviceTimes
+    m.networkStarted = false
+    m.top.ObserveField("connectionMode", "onConnectionModeChanged")
+    m.top.ObserveField("autoStart", "onAutoStart")
+    updateOfflineSource()
+    if m.top.autoStart then startNetworkTask()
     
     ' Make sure the screen is listening for remote control presses
     m.top.setFocus(true) 
+end sub
+
+sub onConnectionModeChanged()
+    m.networkTask.connectionMode = m.top.connectionMode
+    updateOfflineSource()
+end sub
+
+sub updateOfflineSource()
+    if LCase(m.top.connectionMode) = "propresenter"
+        m.offlineSource.text = "Make sure ProPresenter 7 Network is enabled"
+    else
+        m.offlineSource.text = "Make sure DuffLink is running on the host PC"
+    end if
+end sub
+
+sub onAutoStart()
+    if m.top.autoStart then startNetworkTask()
+end sub
+
+sub startNetworkTask()
+    if m.networkStarted then return
+    m.networkTask.connectionMode = m.top.connectionMode
+    m.networkTask.directIp = m.top.directIp
+    m.networkTask.directPort = m.top.directPort
+    m.networkTask.serviceTimes = m.top.serviceTimes
+    m.networkStarted = true
+    print "[StageDisplay] Starting Network Task..."
+    m.networkTask.control = "RUN"
 end sub
 
 sub onConnectionChange()
@@ -54,7 +88,7 @@ sub onStateUpdate()
         if remaining < 0 then remaining = 0
         m.slidesLeftValue.text = remaining.toStr()
         
-        if remaining = 0 
+        if remaining < 5
             m.slidesLeftValue.color = "0xFBBF24FF" 
         else 
             m.slidesLeftValue.color = "0x4F8EF7FF"
@@ -165,6 +199,10 @@ end sub
 function onKeyEvent(key as String, press as Boolean) as Boolean
     handled = false
     if press then
+        if LCase(key) = "back"
+            m.top.returnToSetup = true
+            return true
+        end if
         ' If they press OK and the offline screen is currently visible
         if key = "OK" and m.offlineOverlay.visible = true
             showKeyboard()
@@ -176,8 +214,11 @@ end function
 
 sub showKeyboard()
     m.keyboardDialog = createObject("roSGNode", "KeyboardDialog")
-    ' Prompting for the port as well in case your desktop app uses dynamic ports
-    m.keyboardDialog.title = "Enter DuffLink IP & Port (e.g. 192.168.1.1:8765)"
+    if m.networkTask.connectionMode = "propresenter"
+        m.keyboardDialog.title = "Enter ProPresenter IP & Port (e.g. 192.168.1.1:1025)"
+    else
+        m.keyboardDialog.title = "Enter DuffLink IP & Port (e.g. 192.168.1.1:8765)"
+    end if
     m.keyboardDialog.buttons = ["Connect", "Cancel"]
     m.keyboardDialog.ObserveField("buttonSelected", "onIpEntered")
     m.top.dialog = m.keyboardDialog
@@ -189,8 +230,13 @@ sub onIpEntered()
         m.keyboardDialog.close = true
         
         if enteredIp <> ""
-            ' Pass the exact typed IP/Port down to the background task
-            m.networkTask.manualUrl = "http://" + enteredIp + "/api/state"
+            if m.networkTask.connectionMode = "propresenter"
+                addressParts = enteredIp.Split(":")
+                m.networkTask.directIp = addressParts[0]
+                if addressParts.count() > 1 and addressParts[1] <> "" then m.networkTask.directPort = addressParts[1]
+            else
+                m.networkTask.manualUrl = "http://" + enteredIp + "/api/state"
+            end if
         end if
     else 
         ' They clicked Cancel

@@ -53,6 +53,10 @@ This is a portable single-file executable — no install needed. Just double-cli
 5. Open that URL on any phone/tablet on the same WiFi network or try to connect using the Roku App
 6. You will have to disable screensaver on Roku [Settings -> Theme -> Screensaver -> Start Time -> Never] to make it not time out
 
+## Roku connection choices
+
+When the Roku app starts, choose **DuffLink host** to use automatic discovery or the existing manual DuffLink connection. Choose **Direct ProPresenter 7** to connect to ProPresenter's OpenAPI directly. Enter the ProPresenter IP, port (usually `1025`), and optional same-day service times as comma-separated `HH:MM` values.
+
 ## ProPresenter Setup
 
 In ProPresenter 7:
