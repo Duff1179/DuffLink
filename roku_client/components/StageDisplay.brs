@@ -177,7 +177,7 @@ end function
 sub showKeyboard()
     m.keyboardDialog = createObject("roSGNode", "KeyboardDialog")
     ' Prompting for the port as well in case your desktop app uses dynamic ports
-    m.keyboardDialog.title = "Enter DuffLink IP & Port (e.g. 192.168.1.50:8080)"
+    m.keyboardDialog.title = "Enter DuffLink IP & Port (e.g. 192.168.1.1:8765)"
     m.keyboardDialog.buttons = ["Connect", "Cancel"]
     m.keyboardDialog.ObserveField("buttonSelected", "onIpEntered")
     m.top.dialog = m.keyboardDialog
