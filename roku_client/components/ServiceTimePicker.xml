@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="ServiceTimePicker" extends="Group">
+    <script type="text/brightscript" uri="pkg:/components/ServiceTimePicker.brs" />
+    <interface>
+        <field id="serviceTimes" type="array" />
+        <field id="done" type="boolean" value="false" />
+        <field id="dismissed" type="boolean" value="false" alwaysNotify="true" />
+    </interface>
+    <children>
+        <Rectangle width="1200" height="600" color="0x080A0CF2" translation="[360, 220]" />
+        <Label id="title" text="Service Times" color="0xFFFFFFFF" width="1200" horizAlign="center" translation="[360, 285]">
+            <Font role="font" uri="pkg:/fonts/Inter-Bold.ttf" size="42" />
+        </Label>
+        <Label id="skipInstruction" text="Leave service times blank to skip" color="0x9CA3AFFF" width="1200" horizAlign="center" translation="[360, 345]">
+            <Font role="font" uri="pkg:/fonts/Inter-Regular.ttf" size="22" />
+        </Label>
+        <Label id="instructions" text="Press OK to edit" color="0x9CA3AFFF" width="1200" horizAlign="center" translation="[360, 380]">
+            <Font role="font" uri="pkg:/fonts/Inter-Regular.ttf" size="22" />
+        </Label>
+        <Label id="row1Hour" color="0xFFFFFFFF" width="150" horizAlign="right" translation="[780, 430]"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.ttf" size="36" /></Label>
+        <Label id="row1Colon" text=":" color="0x6B7280FF" width="35" horizAlign="center" translation="[930, 430]"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.ttf" size="36" /></Label>
+        <Label id="row1Minute" color="0x6B7280FF" width="70" horizAlign="left" translation="[965, 430]"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.ttf" size="36" /></Label>
+        <Label id="row1AmPm" color="0x6B7280FF" width="100" horizAlign="left" translation="[1040, 430]"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.ttf" size="36" /></Label>
+        <Label id="row2Hour" color="0x6B7280FF" width="150" horizAlign="right" translation="[780, 510]"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.ttf" size="36" /></Label>
+        <Label id="row2Colon" text=":" color="0x6B7280FF" width="35" horizAlign="center" translation="[930, 510]"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.ttf" size="36" /></Label>
+        <Label id="row2Minute" color="0x6B7280FF" width="70" horizAlign="left" translation="[965, 510]"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.ttf" size="36" /></Label>
+        <Label id="row2AmPm" color="0x6B7280FF" width="100" horizAlign="left" translation="[1040, 510]"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.ttf" size="36" /></Label>
+        <Label id="row3Hour" color="0x6B7280FF" width="150" horizAlign="right" translation="[780, 590]"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.ttf" size="36" /></Label>
+        <Label id="row3Colon" text=":" color="0x6B7280FF" width="35" horizAlign="center" translation="[930, 590]"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.ttf" size="36" /></Label>
+        <Label id="row3Minute" color="0x6B7280FF" width="70" horizAlign="left" translation="[965, 590]"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.ttf" size="36" /></Label>
+        <Label id="row3AmPm" color="0x6B7280FF" width="100" horizAlign="left" translation="[1040, 590]"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.ttf" size="36" /></Label>
+        <Label id="doneLabel" text="Done" color="0x6B7280FF" width="1200" horizAlign="center" translation="[360, 700]"><Font role="font" uri="pkg:/fonts/Inter-Bold.ttf" size="32" /></Label>
+    </children>
+</component>

@@ -9,19 +9,18 @@ sub executeTask()
     msgPort = CreateObject("roMessagePort")
     udp.setMessagePort(msgPort)
     
-    addr = CreateObject("roSocketAddress")
-    addr.setPort(8766)
-    
-    bindSuccess = udp.setAddress(addr)
-    if not bindSuccess
-        print "[NetworkTask] ERROR: Failed to bind UDP to port 8766!"
+    directMode = LCase(m.top.connectionMode) = "propresenter"
+    if not directMode
+        addr = CreateObject("roSocketAddress")
+        addr.setPort(8766)
+        bindSuccess = udp.setAddress(addr)
+        if not bindSuccess then print "[NetworkTask] ERROR: Failed to bind UDP to port 8766!"
+        udp.notifyReadable(true)
+        print "[NetworkTask] Listening for UDP broadcasts on port 8766..."
     end if
     
-    udp.notifyReadable(true)
-    
-    print "[NetworkTask] Listening for UDP broadcasts on port 8766..."
-    
     serverUrl = ""
+    directFailCount = 0
     http = CreateObject("roUrlTransfer")
     http.SetCertificatesFile("common:/certs/ca-bundle.crt")
     http.InitClientCertificates()
@@ -33,7 +32,26 @@ sub executeTask()
             print "[NetworkTask] Manual URL overriding UDP: "; serverUrl
         end if
         
-        if serverUrl = ""
+        if directMode
+            serverUrl = "http://" + m.top.directIp + ":" + m.top.directPort
+            if probeDirectEndpoint(serverUrl)
+                if updateDirectState(http, serverUrl)
+                    directFailCount = 0
+                    m.top.isOnline = true
+                    m.top.timedOut = false
+                else
+                    directFailCount = directFailCount + 1
+                end if
+            else
+                directFailCount = directFailCount + 1
+            end if
+            if directFailCount >= 3
+                m.top.timedOut = true
+                m.top.isOnline = false
+                if directFailCount = 3 then print "[NetworkTask] ProPresenter connection timed out"
+            end if
+            sleep(1000)
+        else if serverUrl = ""
             msg = wait(1000, msgPort)
             
             ' Correct BrightScript socket event
@@ -76,3 +94,120 @@ sub executeTask()
         end if
     end while
 end sub
+
+function probeDirectEndpoint(baseUrl as String) as Boolean
+    transfer = CreateObject("roUrlTransfer")
+    messagePort = CreateObject("roMessagePort")
+    transfer.SetPort(messagePort)
+    transfer.SetUrl(baseUrl + "/version")
+    transfer.RetainBodyOnError(true)
+    if not transfer.AsyncGetToString() then return false
+    event = wait(1000, messagePort)
+    if type(event) <> "roUrlEvent" then return false
+    if event.GetResponseCode() <> 200 then return false
+    return ParseJSON(event.GetString()) <> invalid
+end function
+
+function updateDirectState(http as Object, baseUrl as String) as Boolean
+    messagePort = CreateObject("roMessagePort")
+    pending = {}
+    endpoints = [
+        { name: "presentation", path: "/v1/presentation/active" },
+        { name: "slideIndex", path: "/v1/presentation/slide_index" },
+        { name: "slideStatus", path: "/v1/status/slide" },
+        { name: "timers", path: "/v1/timers/current" }
+    ]
+
+    for each endpoint in endpoints
+        transfer = CreateObject("roUrlTransfer")
+        transfer.SetPort(messagePort)
+        transfer.SetUrl(baseUrl + endpoint.path)
+        transfer.RetainBodyOnError(true)
+        if transfer.AsyncGetToString()
+            pending[transfer.GetIdentity().toStr()] = { transfer: transfer, name: endpoint.name }
+        end if
+    end for
+
+    responses = {}
+    deadline = CreateObject("roDateTime").AsSeconds() + 2
+    while pending.count() > 0 and CreateObject("roDateTime").AsSeconds() < deadline
+        event = wait(250, messagePort)
+        if type(event) = "roUrlEvent"
+            requestId = event.GetSourceIdentity().toStr()
+            request = pending[requestId]
+            if request <> invalid
+                response = ParseJSON(event.GetString())
+                if event.GetResponseCode() = 200 and response <> invalid then responses[request.name] = response
+                pending.delete(requestId)
+            end if
+        end if
+    end while
+
+    for each requestId in pending
+        pending[requestId].transfer.AsyncCancel()
+    end for
+
+    if responses.count() = 0
+        return false
+    end if
+
+    presRes = responses["presentation"]
+    slideIndexRes = responses["slideIndex"]
+    slideStatusRes = responses["slideStatus"]
+    timersRes = responses["timers"]
+    state = { presentationName: "", currentSlideText: "", nextSlideText: "", slideIndex: 0, slideCount: 0, clocks: [], serviceStartISO: serviceStartFromTimes(m.top.serviceTimes) }
+    if presRes <> invalid and presRes.presentation <> invalid
+        if presRes.presentation.id <> invalid and presRes.presentation.id.name <> invalid then state.presentationName = presRes.presentation.id.name
+        if presRes.presentation.groups <> invalid
+            for each group in presRes.presentation.groups
+                if group.slides <> invalid then state.slideCount = state.slideCount + group.slides.count()
+            end for
+        end if
+    end if
+    if slideIndexRes <> invalid
+        if type(slideIndexRes.presentation_index) = "roAssociativeArray"
+            if slideIndexRes.presentation_index.index <> invalid then state.slideIndex = slideIndexRes.presentation_index.index
+        else if slideIndexRes.index <> invalid
+            state.slideIndex = slideIndexRes.index
+        end if
+    end if
+    if slideStatusRes <> invalid
+        if slideStatusRes.current <> invalid and slideStatusRes.current.text <> invalid then state.currentSlideText = slideStatusRes.current.text
+        if slideStatusRes.next <> invalid and slideStatusRes.next.text <> invalid then state.nextSlideText = slideStatusRes.next.text
+    end if
+    if type(timersRes) = "roArray"
+        for each timer in timersRes
+            item = { name: "Timer", time: "", state: "stopped" }
+            if timer.id <> invalid and timer.id.name <> invalid then item.name = timer.id.name
+            if timer.time <> invalid then item.time = timer.time
+            if timer.state <> invalid then item.state = LCase(timer.state.toStr())
+            state.clocks.push(item)
+        end for
+    end if
+    m.top.serverState = state
+    m.top.isOnline = true
+    return true
+end function
+
+function getJson(http as Object, url as String) as Object
+    http.SetUrl(url)
+    response = http.GetToString()
+    if response = "" then return invalid
+    return ParseJSON(response)
+end function
+
+function serviceStartFromTimes(times as Object) as Object
+    if times = invalid or times.count() = 0 then return invalid
+    now = CreateObject("roDateTime")
+    nowSeconds = now.AsSeconds()
+    best = invalid
+    bestDiff = 2147483647
+    for each timeValue in times
+        dateObj = CreateObject("roDateTime")
+        dateObj.FromISO8601String(timeValue)
+        diff = nowSeconds - dateObj.AsSeconds()
+        if diff >= 0 and diff < bestDiff then best = timeValue : bestDiff = diff
+    end for
+    if best <> invalid then return best
+    return times[0]
+end function

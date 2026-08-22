@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="ConnectionSetup" extends="Scene">
+    <script type="text/brightscript" uri="pkg:/components/ConnectionSetup.brs" />
+    <interface>
+        <field id="connectionConfig" type="assocarray" alwaysNotify="true" />
+        <field id="autoDiscover" type="boolean" value="false" />
+    </interface>
+    <children>
+        <Poster uri="pkg:/images/splash_fhd.jpg" width="1920" height="1080" />
+        <Rectangle width="1920" height="1080" color="0x080A0CE8" />
+        <Label text="DUFFLINK STAGE" color="0x4F8EF7FF" width="1920" horizAlign="center" translation="[0, 150]"><Font role="font" uri="pkg:/fonts/Inter-Bold.ttf" size="60" /></Label>
+        <Label text="Choose a connection" color="0xC9D1DBFF" width="1920" horizAlign="center" translation="[0, 235]"><Font role="font" uri="pkg:/fonts/Inter-Regular.ttf" size="34" /></Label>
+        <Label id="dufflinkOption" text="DuffLink Web App" color="0xFFFFFFFF" width="1920" horizAlign="center" translation="[0, 410]"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.ttf" size="44" /></Label>
+        <Label id="proPresenterOption" text="ProPresenter 7 API" color="0xFFFFFFFF" width="1920" horizAlign="center" translation="[0, 510]"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.ttf" size="44" /></Label>
+        <Label text="OK selects   |   Up / Down changes selection" color="0x4B5563FF" width="1920" horizAlign="center" translation="[0, 700]"><Font role="font" uri="pkg:/fonts/Inter-Regular.ttf" size="26" /></Label>
+        <ProDiscoveryTask id="proDiscoveryTask" />
+        <ServiceTimePicker id="serviceTimePicker" visible="false" />
+    </children>
+</component>

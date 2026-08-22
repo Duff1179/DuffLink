@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <component name="StageDisplay" extends="Scene">
     <script type="text/brightscript" uri="pkg:/components/StageDisplay.brs" />
+    <interface>
+        <field id="connectionMode" type="string" value="dufflink" />
+        <field id="directIp" type="string" value="" />
+        <field id="directPort" type="string" value="1025" />
+        <field id="serviceTimes" type="array" />
+        <field id="returnToSetup" type="boolean" value="false" />
+        <field id="autoStart" type="boolean" value="false" />
+    </interface>
     
     <children>
         <Rectangle id="background" width="1920" height="1080" color="0x080A0CFF">
@@ -73,20 +81,21 @@
         
         <!-- OFFLINE OVERLAY -->
         <Rectangle id="offlineOverlay" width="1920" height="1080" color="0x080A0CEE" visible="true">
-            <Label text="Waiting for host..." color="0x374151FF" translation="[0, 500]" width="1920" horizAlign="center">
+            <Label id="offlineTitle" text="Waiting for host..." color="0x374151FF" translation="[0, 500]" width="1920" horizAlign="center">
                 <Font role="font" uri="pkg:/fonts/Inter-Medium.ttf" size="30" />
             </Label>
-            <Label text="Make sure DuffLink is running on the host PC" color="0x1F2937FF" translation="[0, 550]" width="1920" horizAlign="center">
+            <Label id="offlineSource" text="Make sure DuffLink is running on the host PC" color="0x1F2937FF" translation="[0, 550]" width="1920" horizAlign="center">
                 <Font role="font" uri="pkg:/fonts/Inter-Regular.ttf" size="22" />
             </Label>
             
             <!-- Manual Override Instruction -->
-            <Label text="Press OK on your remote to enter IP manually" color="0x374151FF" translation="[0, 620]" width="1920" horizAlign="center">
+            <Label id="offlineAction" text="Press OK on your remote to enter IP manually" color="0x374151FF" translation="[0, 620]" width="1920" horizAlign="center">
                 <Font role="font" uri="pkg:/fonts/Inter-Regular.ttf" size="18" />
             </Label>
         </Rectangle>
         
-        <Timer id="serviceTimer" duration="1" repeat="true" />
-        <NetworkTask id="networkTask" />
+        <Timer id="serviceTimer" duration="0.25" repeat="true" />
+        <Timer id="connectionWatchTimer" duration="1" repeat="true" />
+        <NetworkTask id="networkTask" connectionMode="dufflink" />
     </children>
 </component>
