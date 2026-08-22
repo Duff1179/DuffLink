@@ -5,5 +5,8 @@
     <interface>
         <field id="serverState" type="assocarray" />
         <field id="isOnline" type="boolean" value="false" />
+        
+        <!-- Field to receive manual IP -->
+        <field id="manualUrl" type="string" value="" />
     </interface>
 </component>
