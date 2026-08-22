@@ -4,6 +4,7 @@
     <interface>
         <field id="serviceTimes" type="array" />
         <field id="done" type="boolean" value="false" />
+        <field id="dismissed" type="boolean" value="false" alwaysNotify="true" />
     </interface>
     <children>
         <Rectangle width="1200" height="600" color="0x080A0CF2" translation="[360, 220]" />

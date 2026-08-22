@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <component name="ConnectionSetup" extends="Scene">
     <script type="text/brightscript" uri="pkg:/components/ConnectionSetup.brs" />
-    <interface><field id="connectionConfig" type="assocarray" alwaysNotify="true" /></interface>
+    <interface>
+        <field id="connectionConfig" type="assocarray" alwaysNotify="true" />
+        <field id="autoDiscover" type="boolean" value="false" />
+    </interface>
     <children>
         <Poster uri="pkg:/images/splash_fhd.jpg" width="1920" height="1080" />
         <Rectangle width="1920" height="1080" color="0x080A0CE8" />

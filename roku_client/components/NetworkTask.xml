@@ -5,6 +5,7 @@
     <interface>
         <field id="serverState" type="assocarray" />
         <field id="isOnline" type="boolean" value="false" />
+        <field id="timedOut" type="boolean" value="false" />
         
         <field id="manualUrl" type="string" value="" />
         <field id="connectionMode" type="string" value="dufflink" />

@@ -14,7 +14,7 @@ sub RunUserInterface()
         if m.inSetup and m.setupScene.connectionConfig <> invalid and not m.switchingScreens
             onConnectionConfig()
         else if not m.inSetup and m.scene.returnToSetup = true and not m.switchingScreens
-            showSetupScreen()
+            showSetupScreen(LCase(m.scene.connectionMode) = "propresenter")
         end if
         msgType = type(msg)
         if msgType = "roSGScreenEvent"
@@ -48,7 +48,7 @@ sub onConnectionConfig()
     m.switchingScreens = false
 end sub
 
-sub showSetupScreen()
+sub showSetupScreen(autoDiscover)
     stageScreen = m.screen
     setupScreen = CreateObject("roSGScreen")
     setupScreen.setMessagePort(m.port)
@@ -58,6 +58,7 @@ sub showSetupScreen()
     m.screen = setupScreen
     m.scene = setupScene
     m.setupScene = setupScene
+    setupScene.autoDiscover = autoDiscover
     setupScreen.show()
     setupScene.setFocus(true)
     stageScreen.close()

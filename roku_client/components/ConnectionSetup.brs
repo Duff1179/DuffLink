@@ -3,8 +3,11 @@ sub init()
     m.proPresenterOption = m.top.findNode("proPresenterOption")
     m.proDiscoveryTask = m.top.findNode("proDiscoveryTask")
     m.proDiscoveryTask.ObserveField("results", "onDiscoveryResults")
+    m.discoveryStarted = false
     m.serviceTimePicker = m.top.findNode("serviceTimePicker")
     m.serviceTimePicker.ObserveField("done", "onTimePickerDone")
+    m.serviceTimePicker.ObserveField("dismissed", "onTimePickerDismissed")
+    m.top.ObserveField("autoDiscover", "onAutoDiscover")
     m.selected = 0
     refreshSelection()
     m.top.setFocus(true)
@@ -12,6 +15,11 @@ end sub
 
 sub onShow()
     m.top.setFocus(true)
+    if m.top.autoDiscover then startProDiscovery()
+end sub
+
+sub onAutoDiscover()
+    if m.top.autoDiscover then startProDiscovery()
 end sub
 
 function onKeyEvent(key as String, press as Boolean) as Boolean
@@ -89,6 +97,8 @@ sub closeDialog()
 end sub
 
 sub startProDiscovery()
+    if m.discoveryStarted then return
+    m.discoveryStarted = true
     m.discoveryOptions = []
     m.discoveryReady = false
     m.discoveryDialog = CreateObject("roSGNode", "Dialog")
@@ -121,10 +131,18 @@ sub onDiscoveryResults()
 end sub
 
 sub onDiscoveryButton()
-    if not m.discoveryReady then return
+    if not m.discoveryReady
+        m.discoveryStarted = false
+        m.discoveryDialog.close = true
+        m.discoveryDialog = invalid
+        m.top.dialog = invalid
+        m.top.setFocus(true)
+        return
+    end if
     index = m.discoveryDialog.buttonSelected
     if index < 0 then return
     m.discoveryDialog.close = true
+    m.discoveryStarted = false
     m.top.dialog = invalid
     if index < m.discoveryOptions.count()
         option = m.discoveryOptions[index]
@@ -164,6 +182,11 @@ sub onTimePickerDone()
     m.serviceTimePicker.visible = false
     m.serviceTimePicker.setFocus(false)
     m.top.connectionConfig = { mode: "propresenter", ip: m.directIp, port: m.directPort, serviceTimes: times }
+end sub
+
+sub onTimePickerDismissed()
+    m.discoveryStarted = false
+    m.top.setFocus(true)
 end sub
 
 function twoDigit(value as Integer) as String

@@ -20,6 +20,7 @@ sub executeTask()
     end if
     
     serverUrl = ""
+    directFailCount = 0
     http = CreateObject("roUrlTransfer")
     http.SetCertificatesFile("common:/certs/ca-bundle.crt")
     http.InitClientCertificates()
@@ -33,7 +34,22 @@ sub executeTask()
         
         if directMode
             serverUrl = "http://" + m.top.directIp + ":" + m.top.directPort
-            updateDirectState(http, serverUrl)
+            if probeDirectEndpoint(serverUrl)
+                if updateDirectState(http, serverUrl)
+                    directFailCount = 0
+                    m.top.isOnline = true
+                    m.top.timedOut = false
+                else
+                    directFailCount = directFailCount + 1
+                end if
+            else
+                directFailCount = directFailCount + 1
+            end if
+            if directFailCount >= 3
+                m.top.timedOut = true
+                m.top.isOnline = false
+                if directFailCount = 3 then print "[NetworkTask] ProPresenter connection timed out"
+            end if
             sleep(1000)
         else if serverUrl = ""
             msg = wait(1000, msgPort)
@@ -79,16 +95,66 @@ sub executeTask()
     end while
 end sub
 
-sub updateDirectState(http as Object, baseUrl as String)
-    presRes = getJson(http, baseUrl + "/v1/presentation/active")
-    slideIndexRes = getJson(http, baseUrl + "/v1/presentation/slide_index")
-    slideStatusRes = getJson(http, baseUrl + "/v1/status/slide")
-    timersRes = getJson(http, baseUrl + "/v1/timers/current")
-    if presRes = invalid and slideIndexRes = invalid and slideStatusRes = invalid and timersRes = invalid
-        m.top.isOnline = false
-        return
+function probeDirectEndpoint(baseUrl as String) as Boolean
+    transfer = CreateObject("roUrlTransfer")
+    messagePort = CreateObject("roMessagePort")
+    transfer.SetPort(messagePort)
+    transfer.SetUrl(baseUrl + "/version")
+    transfer.RetainBodyOnError(true)
+    if not transfer.AsyncGetToString() then return false
+    event = wait(1000, messagePort)
+    if type(event) <> "roUrlEvent" then return false
+    if event.GetResponseCode() <> 200 then return false
+    return ParseJSON(event.GetString()) <> invalid
+end function
+
+function updateDirectState(http as Object, baseUrl as String) as Boolean
+    messagePort = CreateObject("roMessagePort")
+    pending = {}
+    endpoints = [
+        { name: "presentation", path: "/v1/presentation/active" },
+        { name: "slideIndex", path: "/v1/presentation/slide_index" },
+        { name: "slideStatus", path: "/v1/status/slide" },
+        { name: "timers", path: "/v1/timers/current" }
+    ]
+
+    for each endpoint in endpoints
+        transfer = CreateObject("roUrlTransfer")
+        transfer.SetPort(messagePort)
+        transfer.SetUrl(baseUrl + endpoint.path)
+        transfer.RetainBodyOnError(true)
+        if transfer.AsyncGetToString()
+            pending[transfer.GetIdentity().toStr()] = { transfer: transfer, name: endpoint.name }
+        end if
+    end for
+
+    responses = {}
+    deadline = CreateObject("roDateTime").AsSeconds() + 2
+    while pending.count() > 0 and CreateObject("roDateTime").AsSeconds() < deadline
+        event = wait(250, messagePort)
+        if type(event) = "roUrlEvent"
+            requestId = event.GetSourceIdentity().toStr()
+            request = pending[requestId]
+            if request <> invalid
+                response = ParseJSON(event.GetString())
+                if event.GetResponseCode() = 200 and response <> invalid then responses[request.name] = response
+                pending.delete(requestId)
+            end if
+        end if
+    end while
+
+    for each requestId in pending
+        pending[requestId].transfer.AsyncCancel()
+    end for
+
+    if responses.count() = 0
+        return false
     end if
 
+    presRes = responses["presentation"]
+    slideIndexRes = responses["slideIndex"]
+    slideStatusRes = responses["slideStatus"]
+    timersRes = responses["timers"]
     state = { presentationName: "", currentSlideText: "", nextSlideText: "", slideIndex: 0, slideCount: 0, clocks: [], serviceStartISO: serviceStartFromTimes(m.top.serviceTimes) }
     if presRes <> invalid and presRes.presentation <> invalid
         if presRes.presentation.id <> invalid and presRes.presentation.id.name <> invalid then state.presentationName = presRes.presentation.id.name
@@ -120,7 +186,8 @@ sub updateDirectState(http as Object, baseUrl as String)
     end if
     m.top.serverState = state
     m.top.isOnline = true
-end sub
+    return true
+end function
 
 function getJson(http as Object, url as String) as Object
     http.SetUrl(url)

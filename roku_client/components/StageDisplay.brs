@@ -8,15 +8,23 @@ sub init()
     m.timerName = m.top.findNode("timerName")
     m.serviceElapsedValue = m.top.findNode("serviceElapsedValue")
     m.offlineOverlay = m.top.findNode("offlineOverlay")
+    m.offlineTitle = m.top.findNode("offlineTitle")
     m.offlineSource = m.top.findNode("offlineSource")
+    m.offlineAction = m.top.findNode("offlineAction")
     
     m.serviceStartTime = ""
     m.serviceTimer = m.top.findNode("serviceTimer")
     m.serviceTimer.observeField("fire", "onServiceTick")
+    m.connectionWatchTimer = m.top.findNode("connectionWatchTimer")
+    m.connectionWatchTimer.observeField("fire", "onConnectionWatch")
+    m.connectionStartedAt = CreateObject("roDateTime").AsSeconds()
+    m.lastOnlineAt = 0
+    m.connectionWatchTimer.control = "START"
     
     m.networkTask = m.top.findNode("networkTask")
     m.networkTask.observeField("serverState", "onStateUpdate")
     m.networkTask.observeField("isOnline", "onConnectionChange")
+    m.networkTask.observeField("timedOut", "onTimeoutChange")
     m.networkTask.connectionMode = m.top.connectionMode
     m.networkTask.directIp = m.top.directIp
     m.networkTask.directPort = m.top.directPort
@@ -38,9 +46,11 @@ end sub
 
 sub updateOfflineSource()
     if LCase(m.top.connectionMode) = "propresenter"
-        m.offlineSource.text = "Make sure ProPresenter 7 Network is enabled"
+        m.offlineSource.text = "Press OK to rediscover ProPresenter hosts or wait for ProPresenter to respond"
+        m.offlineAction.text = ""
     else
         m.offlineSource.text = "Make sure DuffLink is running on the host PC"
+        m.offlineAction.text = "Press OK on your remote to enter IP manually"
     end if
 end sub
 
@@ -61,9 +71,14 @@ end sub
 
 sub onConnectionChange()
     if m.networkTask.isOnline = true
+        m.lastOnlineAt = CreateObject("roDateTime").AsSeconds()
         m.offlineOverlay.visible = false
     else
         m.offlineOverlay.visible = true
+        if LCase(m.top.connectionMode) = "propresenter"
+            m.offlineTitle.text = "ProPresenter connection timed out"
+            m.offlineSource.text = "Press OK to rediscover ProPresenter hosts or wait for ProPresenter to respond"
+        end if
     end if
 end sub
 
@@ -205,7 +220,11 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         end if
         ' If they press OK and the offline screen is currently visible
         if key = "OK" and m.offlineOverlay.visible = true
-            showKeyboard()
+            if LCase(m.top.connectionMode) = "propresenter"
+                m.top.returnToSetup = true
+            else
+                showKeyboard()
+            end if
             handled = true
         end if
     end if
@@ -245,4 +264,28 @@ sub onIpEntered()
     
     ' Give focus back to the main screen so the OK button still works
     m.top.setFocus(true)
+end sub
+
+sub onTimeoutChange()
+    if m.networkTask.timedOut and LCase(m.top.connectionMode) = "propresenter"
+        m.offlineTitle.text = "ProPresenter connection timed out"
+        m.offlineSource.text = "Press OK to rediscover ProPresenter hosts or wait for ProPresenter to respond"
+        m.offlineOverlay.visible = true
+    else
+        m.offlineTitle.text = "Waiting for host..."
+        updateOfflineSource()
+        if m.networkTask.isOnline then m.offlineOverlay.visible = false
+    end if
+end sub
+
+sub onConnectionWatch()
+    if LCase(m.top.connectionMode) <> "propresenter" or m.networkTask.isOnline then return
+    currentTime = CreateObject("roDateTime").AsSeconds()
+    referenceTime = m.lastOnlineAt
+    if referenceTime = 0 then referenceTime = m.connectionStartedAt
+    if currentTime - referenceTime >= 5
+        m.offlineTitle.text = "ProPresenter connection timed out"
+        m.offlineSource.text = "Press OK to rediscover ProPresenter hosts or wait for ProPresenter to respond"
+        m.offlineOverlay.visible = true
+    end if
 end sub
