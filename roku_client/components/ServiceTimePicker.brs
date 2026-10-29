@@ -85,6 +85,13 @@ end sub
 sub changeValue(increase)
     if m.column = 0
         m.hourIndex[m.row] = cycleIndex(m.hourIndex[m.row], m.hours.count(), increase)
+        if m.hourIndex[m.row] = 0
+            m.minuteIndex[m.row] = 0
+            m.ampmIndex[m.row] = 0
+        end if
+    else if m.hourIndex[m.row] = 0
+        ' Row is blank: first press just activates it as 1:00 AM
+        m.hourIndex[m.row] = 1
     else if m.column = 1
         m.minuteIndex[m.row] = cycleIndex(m.minuteIndex[m.row], m.minutes.count(), increase)
     else
