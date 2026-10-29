@@ -102,7 +102,7 @@ end function
 
 sub refresh()
     for index = 0 to 2
-        if m.hourIndex[index] = 0
+        if m.hourIndex[index] = 0 and m.minuteIndex[index] = 0 and m.ampmIndex[index] = 0
             m.labels[index].hour.text = "--"
             m.labels[index].minute.text = "--"
             m.labels[index].ampm.text = "--"
