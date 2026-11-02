@@ -10,12 +10,66 @@ sub init()
     m.editing = false
     m.doneLabel = m.top.findNode("doneLabel")
     m.instructionsLabel = m.top.findNode("instructions")
+    m.top.observeField("savedServiceTimes", "onSavedServiceTimes")
+    m.top.observeField("titleOverride", "onTitleOverride")
+    m.top.observeField("ipAddress", "onIpAddress")
+    m.titleLabel = m.top.findNode("title")
+    m.titleIpLabel = m.top.findNode("titleIp")
+    onTitleOverride()
+    onIpAddress()
     m.labels = []
     for row = 1 to 3
         m.labels.push({ hour: m.top.findNode("row" + row.toStr() + "Hour"), minute: m.top.findNode("row" + row.toStr() + "Minute"), ampm: m.top.findNode("row" + row.toStr() + "AmPm") })
     end for
     refresh()
     m.top.setFocus(true)
+end sub
+
+sub onTitleOverride()
+    if m.top.titleOverride <> ""
+        m.titleLabel.text = m.top.titleOverride
+    else
+        m.titleLabel.text = "Service Times"
+    end if
+end sub
+
+sub onIpAddress()
+    if m.top.ipAddress <> ""
+        m.titleIpLabel.text = "IP: " + m.top.ipAddress
+    else
+        m.titleIpLabel.text = ""
+    end if
+end sub
+
+sub onSavedServiceTimes()
+    if m.top.savedServiceTimes = invalid then return
+    for index = 0 to 2
+        m.hourIndex[index] = 0
+        m.minuteIndex[index] = 0
+        m.ampmIndex[index] = 0
+    end for
+    index = 0
+    for each timeText in m.top.savedServiceTimes
+        if index > 2 then exit for
+        parts = timeText.Split(" ")
+        clockParts = parts[0].Split(":")
+        if clockParts.count() = 2
+            hourValue = clockParts[0].ToInt()
+            if parts.count() > 1
+                m.ampmIndex[index] = 0
+                if parts[1] = "PM" then m.ampmIndex[index] = 1
+            end if
+            m.hourIndex[index] = hourValue
+            for minuteIndex = 0 to m.minutes.count() - 1
+                if m.minutes[minuteIndex] = clockParts[1] then m.minuteIndex[index] = minuteIndex : exit for
+            end for
+        end if
+        index = index + 1
+    end for
+    m.row = 3
+    m.column = 0
+    m.editing = false
+    refresh()
 end sub
 
 function onKeyEvent(key as String, press as Boolean) as Boolean

@@ -4,6 +4,11 @@
     <interface>
         <field id="connectionConfig" type="assocarray" alwaysNotify="true" />
         <field id="autoDiscover" type="boolean" value="false" />
+        <field id="savedIp" type="string" value="" />
+        <field id="savedPort" type="string" value="1025" />
+        <field id="savedServiceTimes" type="array" />
+        <field id="savedServiceTimesISO" type="array" />
+        <field id="manualConfigure" type="boolean" value="false" />
     </interface>
     <children>
         <Poster uri="pkg:/images/splash_fhd.jpg" width="1920" height="1080" />
