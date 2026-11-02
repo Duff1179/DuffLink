@@ -5,7 +5,7 @@ sub init()
     m.hourIndex = [0, 0, 0]
     m.minuteIndex = [0, 0, 0]
     m.ampmIndex = [0, 0, 0]
-    m.row = 0
+    m.row = 3
     m.column = 0
     m.editing = false
     m.doneLabel = m.top.findNode("doneLabel")
@@ -123,7 +123,13 @@ sub refresh()
         m.labels[index].ampm.color = fieldColor(index, 2)
     end for
     if m.row = 3 then m.doneLabel.color = "0xFFFFFFFF" else m.doneLabel.color = "0x6B7280FF"
-    if m.editing then m.instructionsLabel.text = "Press OK to confirm" else m.instructionsLabel.text = "Press OK to edit"
+    if m.row = 3
+        m.instructionsLabel.text = "Press OK to finish"
+    else if m.editing
+        m.instructionsLabel.text = "Press OK to confirm"
+    else
+        m.instructionsLabel.text = "Press OK to edit"
+    end if
 end sub
 
 function fieldColor(index, column) as String
