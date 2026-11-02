@@ -4,16 +4,12 @@ DuffLink is a desktop host for a ProPresenter stage display. It connects to ProP
 
 ## Recent changes
 
-* Added DuffLink host auto-discovery and direct ProPresenter endpoint discovery through `/version`.
-* Added selectable ProPresenter hosts with manual IP fallback.
-* Added a three-row service-time picker with hour, five-minute interval, and AM/PM selection.
-* Added service-time timezone correction and blank-time skipping.
-* Added separate DuffLink and ProPresenter display screens with direct API polling.
-* Added connection timeout detection and offline overlays.
-* Added rediscovery from the ProPresenter timeout screen.
-* Added Back navigation to return to the launch screen.
-* Added screen fade-in transitions.
-* Improved display styling, alignment, font sizing, and slide-count warning colors.
+* Added automatic reconnecting for ProPresenter 7 API endpoints when the app is relaunched
+* Fixed service times not displaying until the hour was changed
+* Fixed HTTP API leak that would cause the app to crash after half and hour
+* Improved stability across the application
+* Standardized the reconnection process
+* Changed ProPresenter 7 API to be the default connection
 
 ## Displayed information
 
