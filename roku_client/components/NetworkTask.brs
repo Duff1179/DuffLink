@@ -103,8 +103,14 @@ function probeDirectEndpoint(baseUrl as String) as Boolean
     transfer.RetainBodyOnError(true)
     if not transfer.AsyncGetToString() then return false
     event = wait(1000, messagePort)
-    if type(event) <> "roUrlEvent" then return false
-    if event.GetResponseCode() <> 200 then return false
+    if type(event) <> "roUrlEvent"
+        transfer.AsyncCancel()
+        return false
+    end if
+    if event.GetResponseCode() <> 200
+        transfer.AsyncCancel()
+        return false
+    end if
     return ParseJSON(event.GetString()) <> invalid
 end function
 

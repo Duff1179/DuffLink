@@ -12,6 +12,7 @@ let clientWss = null;
 let httpServer = null;
 let pollTimeout = null;
 let pollFailCount = 0;
+let pollGeneration = 0;
 let hasShownTrayNotif = false;
 
 // UDP Broadcast variables
@@ -101,7 +102,8 @@ ipcMain.handle('connect', async (event, { ip, port, serviceTimes }) => {
           res.resume();
           state.connected = true;
           const localIp = getLocalIp();
-          startPolling(ip, port);
+          const generation = ++pollGeneration;
+          startPolling(ip, port, generation);
           
           // ADDED: Start UDP Broadcasting so Roku can auto-discover
           startUdpBroadcast(localIp);
@@ -124,8 +126,8 @@ function startUdpBroadcast(ip) {
     }, 2000); // Shouts its location every 2 seconds
 }
 
-async function startPolling(ip, port) {
-    if (!state.connected) return;
+async function startPolling(ip, port, generation) {
+    if (!state.connected || pollGeneration !== generation) return;
     const baseUrl = `http://${ip}:${port}`;
     try {
         const [presRes, slideIndexRes, slideStatusRes, timersRes] = await Promise.all([
@@ -134,6 +136,8 @@ async function startPolling(ip, port) {
             fetchJson(`${baseUrl}/v1/status/slide`),
             fetchJson(`${baseUrl}/v1/timers/current`)
         ]);
+
+        if (!state.connected || pollGeneration !== generation) return;
 
         if (presRes === null && slideIndexRes === null && slideStatusRes === null && timersRes === null) {
             pollFailCount++;
@@ -172,7 +176,9 @@ async function startPolling(ip, port) {
             broadcast({ type: "state", payload: state });
         }
     } catch (err) {}
-    pollTimeout = setTimeout(() => startPolling(ip, port), 1000);
+    if (state.connected && pollGeneration === generation) {
+        pollTimeout = setTimeout(() => startPolling(ip, port, generation), 1000);
+    }
 }
 
 function updateServiceStart() {
@@ -203,9 +209,15 @@ function getLocalIp() {
 
 function cleanup(emitDisconnect = false) {
   clearTimeout(pollTimeout);
+  pollGeneration++;
   if (udpInterval) { clearInterval(udpInterval); udpInterval = null; }
   if (udpClient) { try { udpClient.close(); } catch(e){} udpClient = null; }
   pollFailCount = 0;
+  if (clientWss) {
+    for (const ws of clientWss.clients) {
+      try { ws.close(); } catch(e) {}
+    }
+  }
   httpServer?.close(); httpServer = null;
   clientWss = null;
   state.connected = false; state.clocks = [];
