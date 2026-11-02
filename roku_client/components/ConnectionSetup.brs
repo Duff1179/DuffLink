@@ -8,9 +8,37 @@ sub init()
     m.serviceTimePicker.ObserveField("done", "onTimePickerDone")
     m.serviceTimePicker.ObserveField("dismissed", "onTimePickerDismissed")
     m.top.ObserveField("autoDiscover", "onAutoDiscover")
+    m.top.ObserveField("savedServiceTimes", "onSavedServiceTimes")
+    m.top.ObserveField("savedIp", "onSavedConnection")
+    m.top.ObserveField("savedPort", "onSavedConnection")
+    m.savedServiceTimeDisplay = []
+    m.savedServiceTimesISO = []
     m.selected = 0
+    loadSavedConnectionValues()
     refreshSelection()
     m.top.setFocus(true)
+end sub
+
+sub loadSavedConnectionValues()
+    if m.top.savedIp <> "" then m.directIp = m.top.savedIp
+    if m.top.savedPort <> "" then m.directPort = m.top.savedPort else m.directPort = "1025"
+    if m.top.savedServiceTimes <> invalid and m.top.savedServiceTimes.count() > 0
+        m.savedServiceTimeDisplay = m.top.savedServiceTimes
+        m.serviceTimePicker.savedServiceTimes = m.savedServiceTimeDisplay
+    end if
+    if m.top.savedServiceTimesISO <> invalid then m.savedServiceTimesISO = m.top.savedServiceTimesISO
+end sub
+
+sub onSavedServiceTimes()
+    if m.top.savedServiceTimes <> invalid
+        m.savedServiceTimeDisplay = m.top.savedServiceTimes
+        m.serviceTimePicker.savedServiceTimes = m.savedServiceTimeDisplay
+    end if
+end sub
+
+sub onSavedConnection()
+    if m.top.savedIp <> invalid then m.directIp = m.top.savedIp
+    if m.top.savedPort <> invalid and m.top.savedPort <> "" then m.directPort = m.top.savedPort else m.directPort = "1025"
 end sub
 
 sub onShow()
@@ -31,7 +59,7 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         return true
     else if key = "ok"
         if m.selected = 0
-            startProDiscovery()
+            if m.top.manualConfigure then showIpDialog() else startProDiscovery()
         else
             m.top.connectionConfig = { mode: "dufflink", ip: "", port: "8765", serviceTimes: [] }
         end if
@@ -49,6 +77,7 @@ end sub
 sub showIpDialog()
     m.dialog = CreateObject("roSGNode", "KeyboardDialog")
     m.dialog.title = "ProPresenter IP address"
+    if m.directIp <> invalid and m.directIp <> "" then m.dialog.text = m.directIp
     m.dialog.buttons = ["Next", "Cancel"]
     m.dialog.ObserveField("buttonSelected", "onIpEntered")
     m.top.dialog = m.dialog
@@ -62,7 +91,7 @@ sub onIpEntered()
     if m.directIp = "" then return
     m.dialog = CreateObject("roSGNode", "KeyboardDialog")
     m.dialog.title = "ProPresenter port (default 1025)"
-    m.dialog.text = "1025"
+    if m.directPort <> invalid and m.directPort <> "" then m.dialog.text = m.directPort else m.dialog.text = "1025"
     m.dialog.buttons = ["Next", "Cancel"]
     m.dialog.ObserveField("buttonSelected", "onPortEntered")
     m.top.dialog = m.dialog
@@ -159,15 +188,20 @@ sub beginServiceTimes(ip as String, port as String)
 end sub
 
 sub showTimePicker()
+    if m.savedServiceTimeDisplay.count() > 0
+        m.serviceTimePicker.savedServiceTimes = m.savedServiceTimeDisplay
+    end if
     m.serviceTimePicker.visible = true
     m.serviceTimePicker.setFocus(true)
 end sub
 
 sub onTimePickerDone()
     times = []
+    displayTimes = []
     now = CreateObject("roDateTime")
     dateText = now.ToISOString().Left(10)
     for each timeValue in m.serviceTimePicker.serviceTimes
+        displayTimes.push(timeValue)
         parts = timeValue.Split(" ")
         clockParts = parts[0].Split(":")
         hourValue = clockParts[0].ToInt()
@@ -181,7 +215,8 @@ sub onTimePickerDone()
     end for
     m.serviceTimePicker.visible = false
     m.serviceTimePicker.setFocus(false)
-    m.top.connectionConfig = { mode: "propresenter", ip: m.directIp, port: m.directPort, serviceTimes: times }
+    m.savedServiceTimeDisplay = displayTimes
+    m.top.connectionConfig = { mode: "propresenter", ip: m.directIp, port: m.directPort, serviceTimes: times, serviceTimeDisplay: displayTimes }
 end sub
 
 sub onTimePickerDismissed()

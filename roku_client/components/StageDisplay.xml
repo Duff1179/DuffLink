@@ -8,6 +8,9 @@
         <field id="serviceTimes" type="array" />
         <field id="returnToSetup" type="boolean" value="false" />
         <field id="autoStart" type="boolean" value="false" />
+        <field id="autoReconnect" type="boolean" value="false" />
+        <field id="manualConfigure" type="boolean" value="false" />
+        <field id="savedServiceTimeDisplay" type="array" />
     </interface>
     
     <children>
@@ -81,7 +84,7 @@
         
         <!-- OFFLINE OVERLAY -->
         <Rectangle id="offlineOverlay" width="1920" height="1080" color="0x080A0CEE" visible="true">
-            <Label id="offlineTitle" text="Waiting for host..." color="0x374151FF" translation="[0, 500]" width="1920" horizAlign="center">
+            <Label id="offlineTitle" text="Automatically Reconnecting..." color="0x374151FF" translation="[0, 500]" width="1920" horizAlign="center">
                 <Font role="font" uri="pkg:/fonts/Inter-Medium.ttf" size="30" />
             </Label>
             <Label id="offlineSource" text="Make sure DuffLink is running on the host PC" color="0x1F2937FF" translation="[0, 550]" width="1920" horizAlign="center">
@@ -96,6 +99,8 @@
         
         <Timer id="serviceTimer" duration="0.25" repeat="true" />
         <Timer id="connectionWatchTimer" duration="1" repeat="true" />
+        <Timer id="retryTimer" duration="1" repeat="true" />
         <NetworkTask id="networkTask" connectionMode="dufflink" />
+        <ServiceTimePicker id="autoServiceTimePicker" visible="false" />
     </children>
 </component>
