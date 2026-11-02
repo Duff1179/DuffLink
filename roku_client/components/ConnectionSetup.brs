@@ -31,9 +31,9 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         return true
     else if key = "ok"
         if m.selected = 0
-            m.top.connectionConfig = { mode: "dufflink", ip: "", port: "8765", serviceTimes: [] }
-        else
             startProDiscovery()
+        else
+            m.top.connectionConfig = { mode: "dufflink", ip: "", port: "8765", serviceTimes: [] }
         end if
         return true
     end if
@@ -43,7 +43,7 @@ end function
 sub refreshSelection()
     m.dufflinkOption.color = "0x6B7280FF"
     m.proPresenterOption.color = "0x6B7280FF"
-    if m.selected = 0 then m.dufflinkOption.color = "0xFFFFFFFF" else m.proPresenterOption.color = "0xFFFFFFFF"
+    if m.selected = 0 then m.proPresenterOption.color = "0xFFFFFFFF" else m.dufflinkOption.color = "0xFFFFFFFF"
 end sub
 
 sub showIpDialog()

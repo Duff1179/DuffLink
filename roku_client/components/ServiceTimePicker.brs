@@ -5,7 +5,7 @@ sub init()
     m.hourIndex = [0, 0, 0]
     m.minuteIndex = [0, 0, 0]
     m.ampmIndex = [0, 0, 0]
-    m.row = 0
+    m.row = 3
     m.column = 0
     m.editing = false
     m.doneLabel = m.top.findNode("doneLabel")
@@ -85,6 +85,13 @@ end sub
 sub changeValue(increase)
     if m.column = 0
         m.hourIndex[m.row] = cycleIndex(m.hourIndex[m.row], m.hours.count(), increase)
+        if m.hourIndex[m.row] = 0
+            m.minuteIndex[m.row] = 0
+            m.ampmIndex[m.row] = 0
+        end if
+    else if m.hourIndex[m.row] = 0
+        ' Row is blank: first press just activates it as 1:00 AM
+        m.hourIndex[m.row] = 1
     else if m.column = 1
         m.minuteIndex[m.row] = cycleIndex(m.minuteIndex[m.row], m.minutes.count(), increase)
     else
@@ -102,7 +109,7 @@ end function
 
 sub refresh()
     for index = 0 to 2
-        if m.hourIndex[index] = 0
+        if m.hourIndex[index] = 0 and m.minuteIndex[index] = 0 and m.ampmIndex[index] = 0
             m.labels[index].hour.text = "--"
             m.labels[index].minute.text = "--"
             m.labels[index].ampm.text = "--"
@@ -116,7 +123,13 @@ sub refresh()
         m.labels[index].ampm.color = fieldColor(index, 2)
     end for
     if m.row = 3 then m.doneLabel.color = "0xFFFFFFFF" else m.doneLabel.color = "0x6B7280FF"
-    if m.editing then m.instructionsLabel.text = "Press OK to confirm" else m.instructionsLabel.text = "Press OK to edit"
+    if m.row = 3
+        m.instructionsLabel.text = "Press OK to finish"
+    else if m.editing
+        m.instructionsLabel.text = "Press OK to confirm"
+    else
+        m.instructionsLabel.text = "Press OK to edit"
+    end if
 end sub
 
 function fieldColor(index, column) as String
